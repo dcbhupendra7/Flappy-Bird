@@ -6,6 +6,12 @@
 let bgImg, baseImg, pipeImg;
 let birdFrames = [];
 
+let bestScore = 0; // Current run best
+let allTimeBest = 0; // Across all runs (in memory or localStorage)
+
+// HTML elements for the scores
+let allTimeBestSpan, currentBestSpan;
+
 // We'll store the final scaled heights
 let baseImgHeight;
 
@@ -70,9 +76,17 @@ function preload() {
 }
 
 function setup() {
-  // We'll assume 288×512 canvas, the classic Flappy Bird size
+  //the classic Flappy Bird size
   createCanvas(800, 700);
+  // If you want to persist the allTimeBest across sessions:
+  let storedBest = localStorage.getItem("flappyAllTimeBest");
+  if (storedBest) {
+    allTimeBest = parseInt(storedBest, 10);
+  }
 
+  // Use p5's select() or standard document.getElementById()
+  allTimeBestSpan = select("#allTimeBest");
+  currentBestSpan = select("#currentBest");
   // Log loaded image dimensions for debugging
   if (DEBUG) {
     console.log("bgImg:", bgImg.width, bgImg.height);
@@ -152,6 +166,21 @@ function draw() {
   textSize(24);
   textAlign(CENTER, TOP);
   text(score, width / 2, 10);
+
+  // Suppose 'score' is your current game score
+  // Check if we beat the current run best
+  if (score > bestScore) {
+    bestScore = score;
+  }
+  // Check if we beat the all-time best
+  if (score > allTimeBest) {
+    allTimeBest = score;
+    localStorage.setItem("flappyAllTimeBest", allTimeBest);
+  }
+
+  // Update DOM elements
+  if (allTimeBestSpan) allTimeBestSpan.html(allTimeBest);
+  if (currentBestSpan) currentBestSpan.html(bestScore);
 }
 
 function keyPressed() {
@@ -182,4 +211,8 @@ function resetGame() {
   bird = new Bird();
   frameCount = 0;
   pipes.push(new Pipe());
+
+  // When player dies or restarts
+  score = 0;
+  bestScore = 0; // or keep if you want best for the entire session
 }
