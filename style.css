@@ -126,3 +126,13 @@ canvas {
   font-size: 18px; /* Slightly larger for readability */
   color: #ecf0f1; /* Light gray for contrast */
 }
+/* NEW: Mode Toggle Panel */
+#mode-toggle-panel {
+  position: absolute;
+  top: 300px; /* or wherever you like */
+  left: 20px;
+  width: 200px;
+  text-align: center;
+  z-index: 9999; /* Higher than any other panel or overlay */
+  pointer-events: auto; /* Ensure it can receive clicks */
+}

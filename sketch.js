@@ -1,10 +1,9 @@
-/**************************************************************
- * p5.js Sketch
- **************************************************************/
-
 // Global image variables
 let bgImg, baseImg, pipeImg;
 let birdFrames = [];
+
+// Start in Human mode by default
+let isAiMode = false;
 
 let bestScore = 0; // Current run best
 let allTimeBest = 0; // Across all runs (in memory or localStorage)
@@ -78,6 +77,20 @@ function preload() {
 function setup() {
   //the classic Flappy Bird size
   createCanvas(800, 700);
+
+  // Grab the toggle button
+  const toggleModeBtn = document.getElementById("toggleModeBtn");
+  toggleModeBtn.addEventListener("click", () => {
+    isAiMode = !isAiMode; // Flip the boolean
+    // Update button text
+    if (isAiMode) {
+      toggleModeBtn.textContent = "Switch to Human Mode";
+      // (Optional) do any immediate AI-related initialization here
+    } else {
+      toggleModeBtn.textContent = "Switch to AI Mode";
+      // (Optional) revert to human mode logic
+    }
+  });
   // If you want to persist the allTimeBest across sessions:
   let storedBest = localStorage.getItem("flappyAllTimeBest");
   if (storedBest) {

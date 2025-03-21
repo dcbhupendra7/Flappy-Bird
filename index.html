@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <!-- Absolutely positioned panels -->
+    <!-- Existing panels (unchanged) -->
     <div id="instructions-panel" class="panel">
       <h2>How to Play</h2>
       <p>
@@ -38,6 +38,13 @@
         <h2>GAME OVER</h2>
         <p>Press SPACE to Restart</p>
       </div>
+    </div>
+
+    <!-- NEW: Mode Toggle Panel -->
+    <div id="mode-toggle-panel" class="panel">
+      <h2>Mode</h2>
+      <!-- Button text will change from "Switch to AI Mode" to "Switch to Human Mode" -->
+      <button id="toggleModeBtn">Switch to AI Mode</button>
     </div>
 
     <!-- Load your game scripts -->
