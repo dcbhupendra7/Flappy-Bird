@@ -5,11 +5,42 @@
     <title>Flappy Bird from Scratch</title>
     <!-- p5.js library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
-    <!-- Custom CSS -->
+    <!-- Google Font for a more distinctive look -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Link to your stylesheet -->
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <!-- Load our classes and main sketch in order -->
+    <!-- Absolutely positioned panels -->
+    <div id="instructions-panel" class="panel">
+      <h2>How to Play</h2>
+      <p>
+        <strong
+          >Click on the screen, or use your spacebar or up arrow to get
+          started.</strong
+        >
+      </p>
+      <p>Fly the bird as far as you can without hitting a pipe.</p>
+    </div>
+
+    <div id="scores-panel" class="panel">
+      <h2>Scores</h2>
+      <p>All Time Best Score: <span id="allTimeBest">0</span></p>
+      <p>Current Best Score: <span id="currentBest">0</span></p>
+    </div>
+
+    <!-- Game Over overlay (initially hidden) -->
+    <div id="gameOverScreen" class="game-over-overlay">
+      <div>
+        <h2>GAME OVER</h2>
+        <p>Press SPACE to Restart</p>
+      </div>
+    </div>
+
+    <!-- Load your game scripts -->
     <script src="classes.js"></script>
     <script src="sketch.js"></script>
   </body>
