@@ -129,10 +129,51 @@ canvas {
 /* NEW: Mode Toggle Panel */
 #mode-toggle-panel {
   position: absolute;
-  top: 300px; /* or wherever you like */
+  top: 500px; /* or wherever you like */
   left: 20px;
   width: 200px;
   text-align: center;
   z-index: 9999; /* Higher than any other panel or overlay */
   pointer-events: auto; /* Ensure it can receive clicks */
+}
+
+/* AI Controls */
+.ai-controls {
+  margin-top: 15px;
+}
+
+.ai-controls label {
+  display: block;
+  font-size: 10px;
+  margin-bottom: 5px;
+  color: #2c3e50;
+}
+
+.ai-controls input {
+  width: 100%;
+  padding: 5px;
+  margin-bottom: 10px;
+  border: 1px solid #2c3e50;
+  border-radius: 5px;
+  font-family: "Press Start 2P", sans-serif;
+  font-size: 10px;
+  background-color: rgba(255, 255, 255, 0.8);
+  color: #2c3e50;
+}
+
+.ai-controls button {
+  width: 100%;
+  padding: 8px;
+  background-color: #e74c3c;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  font-family: "Press Start 2P", sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.ai-controls button:hover {
+  background-color: #c0392b;
 }

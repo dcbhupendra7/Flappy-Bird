@@ -5,215 +5,208 @@ let birdFrames = [];
 // Start in Human mode by default
 let isAiMode = false;
 
-let bestScore = 0; // Current run best
-let allTimeBest = 0; // Across all runs (in memory or localStorage)
+// AI Mode variables
+let populationSize = 50;
+let mutationRate = 0.1;
+let birds = [];
+let generation = 1;
+let aiStarted = false;
 
-// HTML elements for the scores
+// Scores
+let bestScore = 0;
+let allTimeBest = 0;
+
+// HTML elements
 let allTimeBestSpan, currentBestSpan;
+let instructionsTitle, humanInstructions, aiInstructions;
 
-// We'll store the final scaled heights
+// Base variables
 let baseImgHeight;
+let baseX = 0;
+let baseSpeed = 2;
+
+// Game objects
+let bird; // Single bird for Human Mode
+let pipes = [];
+
+// Game state
+let gameOver = false;
+let score = 0;
 
 // Bird animation
 let birdFrameIndex = 0;
 let birdFrameDelay = 5;
 let birdFrameCounter = 0;
 
-// Game objects
-let bird;
-let pipes = [];
-
-// Ground (base) scroll
-let baseX = 0;
-let baseSpeed = 2;
-
-// Game state
-let gameOver = false;
-let score = 0;
-
 // Debug mode
 const DEBUG = true;
 
 function preload() {
-  // Load images with success and error callbacks
-  bgImg = loadImage(
-    "background-white.png",
-    () => console.log("Background loaded successfully"),
-    () => console.error("Failed to load background")
-  );
-
-  baseImg = loadImage(
-    "base.png",
-    () => console.log("Base loaded successfully"),
-    () => console.error("Failed to load base")
-  );
-
-  pipeImg = loadImage(
-    "pipe-green.png",
-    () => console.log("Pipe loaded successfully"),
-    () => console.error("Failed to load pipe")
-  );
-
-  // Load bird animation frames
-  birdFrames[0] = loadImage(
-    "redbird-downflap.png",
-    () => console.log("Bird down loaded successfully"),
-    () => console.error("Failed to load bird down")
-  );
-
-  birdFrames[1] = loadImage(
-    "redbird-midflap.png",
-    () => console.log("Bird mid loaded successfully"),
-    () => console.error("Failed to load bird mid")
-  );
-
-  birdFrames[2] = loadImage(
-    "redbird-upflap.png",
-    () => console.log("Bird up loaded successfully"),
-    () => console.error("Failed to load bird up")
-  );
+  bgImg = loadImage("background-white.png");
+  baseImg = loadImage("base.png");
+  pipeImg = loadImage("pipe-green.png");
+  birdFrames[0] = loadImage("redbird-downflap.png");
+  birdFrames[1] = loadImage("redbird-midflap.png");
+  birdFrames[2] = loadImage("redbird-upflap.png");
 }
 
 function setup() {
-  //the classic Flappy Bird size
   createCanvas(800, 700);
-
-  // Grab the toggle button
+  // Ensure the instructions panel is on top and clickable
+  const instructionsPanel = document.getElementById("instructions-panel");
+  instructionsPanel.style.zIndex = "9999";
+  instructionsPanel.style.pointerEvents = "auto";
+  // HTML elements
   const toggleModeBtn = document.getElementById("toggleModeBtn");
-  toggleModeBtn.addEventListener("click", () => {
-    isAiMode = !isAiMode; // Flip the boolean
-    // Update button text
-    if (isAiMode) {
-      toggleModeBtn.textContent = "Switch to Human Mode";
-      // (Optional) do any immediate AI-related initialization here
-    } else {
-      toggleModeBtn.textContent = "Switch to AI Mode";
-      // (Optional) revert to human mode logic
-    }
-  });
-  // If you want to persist the allTimeBest across sessions:
-  let storedBest = localStorage.getItem("flappyAllTimeBest");
-  if (storedBest) {
-    allTimeBest = parseInt(storedBest, 10);
-  }
-
-  // Use p5's select() or standard document.getElementById()
+  instructionsTitle = document.getElementById("instructions-title");
+  humanInstructions = document.getElementById("human-instructions");
+  aiInstructions = document.getElementById("ai-instructions");
   allTimeBestSpan = select("#allTimeBest");
   currentBestSpan = select("#currentBest");
-  // Log loaded image dimensions for debugging
-  if (DEBUG) {
-    console.log("bgImg:", bgImg.width, bgImg.height);
-    console.log("baseImg:", baseImg.width, baseImg.height);
-    console.log("pipeImg:", pipeImg.width, pipeImg.height);
-    console.log("birdFrames:", birdFrames[0].width, birdFrames[0].height);
-  }
 
-  // Calculate scaled base height (maintain aspect ratio)
-  // From your console.log, the base image height is 112
+  // Mode toggle
+  toggleModeBtn.addEventListener("click", () => {
+    isAiMode = !isAiMode;
+    toggleModeBtn.textContent = isAiMode
+      ? "Switch to Human Mode"
+      : "Switch to AI Mode";
+    updateInstructions();
+    if (!isAiMode) resetGame(); // Reset to Human Mode
+    else {
+      aiStarted = false; // Reset AI Mode state
+      birds = [];
+    }
+  });
+
+  // AI Mode Start button
+  const startAiBtn = document.getElementById("start-ai-btn");
+  startAiBtn.addEventListener("click", () => {
+    mutationRate = parseFloat(document.getElementById("mutation-rate").value);
+    populationSize = parseInt(document.getElementById("population-size").value);
+    startAiMode();
+  });
+
+  // Load all-time best score
+  let storedBest = localStorage.getItem("flappyAllTimeBest");
+  if (storedBest) allTimeBest = parseInt(storedBest, 10);
+
   baseImgHeight = 112;
-
-  // Create the bird and start with one pipe
-  bird = new Bird();
+  bird = new Bird(); // Human Mode bird
   pipes.push(new Pipe());
 }
 
 function draw() {
-  // Game over state
-  if (gameOver) {
-    // Dim screen, show "Game Over"
-    background(0, 150);
-    fill(255);
-    textSize(24);
-    textAlign(CENTER, CENTER);
-    text("GAME OVER\nPress SPACE to Restart", width / 2, height / 2);
-    return;
-  }
-
-  // 1) Draw the background
   image(bgImg, 0, 0, width, height);
 
-  // 2) Update & draw pipes
-  for (let i = pipes.length - 1; i >= 0; i--) {
-    pipes[i].update();
-    pipes[i].show();
+  if (isAiMode) {
+    if (!aiStarted) return; // Wait for Start button
 
-    // Check if pipe is off screen
-    if (pipes[i].offscreen()) {
-      pipes.splice(i, 1);
-      score++;
+    // AI Mode logic
+    let allDead = true;
+    for (let b of birds) {
+      if (!b.dead) {
+        allDead = false;
+        b.think(pipes); // Neural network decision
+        b.update();
+        b.show();
+        if (b.hitsPipes(pipes) || b.y >= height - baseImgHeight || b.y <= 0) {
+          b.dead = true;
+        } else {
+          b.score++;
+        }
+      }
     }
 
-    // Check for collision
-    if (pipes[i].hits(bird)) {
-      gameOver = true;
+    // Update pipes
+    for (let i = pipes.length - 1; i >= 0; i--) {
+      pipes[i].update();
+      pipes[i].show();
+      if (pipes[i].offscreen()) {
+        pipes.splice(i, 1);
+        score++;
+      }
     }
+
+    if (frameCount % 90 === 0) pipes.push(new Pipe());
+
+    // Check if generation is over
+    if (allDead) {
+      evolvePopulation();
+    }
+  } else {
+    // Human Mode logic (unchanged)
+    if (gameOver) {
+      background(0, 150);
+      fill(255);
+      textSize(24);
+      textAlign(CENTER, CENTER);
+      text("GAME OVER\nPress SPACE to Restart", width / 2, height / 2);
+      return;
+    }
+
+    for (let i = pipes.length - 1; i >= 0; i--) {
+      pipes[i].update();
+      pipes[i].show();
+      if (pipes[i].offscreen()) {
+        pipes.splice(i, 1);
+        score++;
+      }
+      if (pipes[i].hits(bird)) gameOver = true;
+    }
+
+    birdFrameCounter++;
+    if (birdFrameCounter % birdFrameDelay === 0) {
+      birdFrameIndex = (birdFrameIndex + 1) % birdFrames.length;
+    }
+
+    bird.update();
+    bird.show();
+
+    if (frameCount % 90 === 0) pipes.push(new Pipe());
   }
 
-  // 3) Animate bird flapping
-  birdFrameCounter++;
-  if (birdFrameCounter % birdFrameDelay === 0) {
-    birdFrameIndex = (birdFrameIndex + 1) % birdFrames.length;
-  }
-
-  // 4) Update & draw bird
-  bird.update();
-  bird.show();
-
-  // 5) Spawn pipes every 90 frames
-  if (frameCount % 90 === 0) {
-    pipes.push(new Pipe());
-  }
-
-  // 6) Scrolling ground
+  // Ground scrolling (both modes)
   baseX -= baseSpeed;
-  if (baseX <= -width) {
-    baseX = 0;
-  }
-
-  // Draw two copies of base image side by side for infinite scrolling
+  if (baseX <= -width) baseX = 0;
   image(baseImg, baseX, height - baseImgHeight, width, baseImgHeight);
   image(baseImg, baseX + width, height - baseImgHeight, width, baseImgHeight);
 
-  // 7) Score
+  // Score display (both modes)
   fill(255);
   textSize(24);
   textAlign(CENTER, TOP);
   text(score, width / 2, 10);
 
-  // Suppose 'score' is your current game score
-  // Check if we beat the current run best
-  if (score > bestScore) {
-    bestScore = score;
-  }
-  // Check if we beat the all-time best
+  // Update scores
+  if (score > bestScore) bestScore = score;
   if (score > allTimeBest) {
     allTimeBest = score;
     localStorage.setItem("flappyAllTimeBest", allTimeBest);
   }
-
-  // Update DOM elements
-  if (allTimeBestSpan) allTimeBestSpan.html(allTimeBest);
-  if (currentBestSpan) currentBestSpan.html(bestScore);
+  allTimeBestSpan.html(allTimeBest);
+  currentBestSpan.html(bestScore);
 }
 
 function keyPressed() {
-  if (key === " " || keyCode === UP_ARROW) {
-    if (gameOver) {
-      // Restart game
-      resetGame();
-    } else {
-      // Bird flap
-      bird.up();
+  if (!isAiMode) {
+    if (key === " " || keyCode === UP_ARROW) {
+      if (gameOver) resetGame();
+      else bird.up();
     }
   }
 }
 
 function mousePressed() {
-  // Allow mouse clicks to flap too
-  if (gameOver) {
-    resetGame();
-  } else {
-    bird.up();
+  if (!isAiMode) {
+    if (gameOver) resetGame();
+    else bird.up();
+  }
+}
+
+function touchStarted() {
+  if (!isAiMode) {
+    if (gameOver) resetGame();
+    else bird.up();
   }
 }
 
@@ -224,8 +217,57 @@ function resetGame() {
   bird = new Bird();
   frameCount = 0;
   pipes.push(new Pipe());
+  bestScore = 0;
+}
 
-  // When player dies or restarts
+function updateInstructions() {
+  if (isAiMode) {
+    instructionsTitle.textContent = "AI Mode";
+    humanInstructions.style.display = "none";
+    aiInstructions.style.display = "block";
+  } else {
+    instructionsTitle.textContent = "How to Play";
+    humanInstructions.style.display = "block";
+    aiInstructions.style.display = "none";
+  }
+}
+
+function startAiMode() {
+  aiStarted = true;
+  birds = [];
+  bestScore = 0;
   score = 0;
-  bestScore = 0; // or keep if you want best for the entire session
+  pipes = [new Pipe()];
+  for (let i = 0; i < populationSize; i++) {
+    birds.push(new AiBird());
+  }
+}
+
+function evolvePopulation() {
+  // Simple genetic algorithm
+  let totalScore = birds.reduce((sum, b) => sum + b.score, 0);
+  let newBirds = [];
+
+  // Select top performers and create new population
+  birds.sort((a, b) => b.score - a.score); // Sort by score descending
+  let elite = birds.slice(0, Math.floor(populationSize * 0.2)); // Keep top 20%
+
+  // Fill the rest with offspring
+  while (newBirds.length < populationSize - elite.length) {
+    let parent1 = random(birds);
+    let parent2 = random(birds);
+    let child = new AiBird();
+    child.brain.crossover(parent1.brain, parent2.brain);
+    child.brain.mutate(mutationRate);
+    newBirds.push(child);
+  }
+
+  birds = [...elite, ...newBirds];
+  generation++;
+  score = 0;
+  bestScore = 0;
+  pipes = [new Pipe()];
+  for (let b of birds) {
+    b.reset();
+  }
 }
