@@ -76,6 +76,8 @@ function setup() {
       aiStarted = false; // Reset AI Mode state
       birds = [];
     }
+    // Force the button to lose focus so pressing space won't re-click it
+    toggleModeBtn.blur();
   });
 
   // AI Mode Start button
