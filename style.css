@@ -177,3 +177,32 @@ canvas {
 .ai-controls button:hover {
   background-color: #c0392b;
 }
+
+#ga-info-panel {
+  /* Center horizontally, set a max width */
+  margin: 20px auto;
+  max-width: 600px;
+
+  /* A “card” style similar to other panels */
+  background-color: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(5px);
+  color: #2c3e50;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+
+  /* Use the same font size & line-height as instructions */
+  font-size: 12px;
+  line-height: 1.5;
+  text-shadow: none; /* No text shadow, consistent with new panels */
+}
+
+#ga-info-panel h2 {
+  font-size: 18px;
+  color: #e74c3c; /* same accent color as instructions */
+  border-bottom: 2px solid #e74c3c;
+  padding-bottom: 8px;
+  margin-top: 0;
+  margin-bottom: 10px;
+}

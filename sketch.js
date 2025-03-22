@@ -70,6 +70,13 @@ function setup() {
     toggleModeBtn.textContent = isAiMode
       ? "Switch to Human Mode"
       : "Switch to AI Mode";
+    // Show/hide the GA info panel
+    const gaInfoPanel = document.getElementById("ga-info-panel");
+    if (isAiMode) {
+      gaInfoPanel.style.display = "block";
+    } else {
+      gaInfoPanel.style.display = "none";
+    }
     updateInstructions();
     if (!isAiMode) resetGame(); // Reset to Human Mode
     else {
