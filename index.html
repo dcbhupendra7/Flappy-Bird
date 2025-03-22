@@ -56,14 +56,14 @@
       </div>
     </div>
 
-    <!-- Scores panel (unchanged) -->
+    <!-- Scores panel -->
     <div id="scores-panel" class="panel">
       <h2>Scores</h2>
       <p>All Time Best Score: <span id="allTimeBest">0</span></p>
       <p>Current Best Score: <span id="currentBest">0</span></p>
     </div>
 
-    <!-- Game Over overlay (unchanged) -->
+    <!-- Game Over overlay -->
     <div id="gameOverScreen" class="game-over-overlay">
       <div>
         <h2>GAME OVER</h2>
@@ -71,10 +71,22 @@
       </div>
     </div>
 
-    <!-- Mode Toggle Panel (unchanged) -->
+    <!-- Mode Toggle Panel  -->
     <div id="mode-toggle-panel" class="panel">
       <h2>Mode</h2>
       <button id="toggleModeBtn">Switch to AI Mode</button>
+    </div>
+    <!-- p5 canvas container -->
+    <div id="canvas-container"></div>
+
+    <!-- NEW: Genetic Algorithm info panel, hidden by default -->
+    <div id="ga-info-panel" style="display: none">
+      <h2>Genetic Algorithm</h2>
+      <p>
+        A Genetic Algorithm helps our AI birds learn over many generations. The
+        best birds pass on their abilities, and small random changes (mutations)
+        help them discover new ways to avoid the pipes!
+      </p>
     </div>
 
     <!-- Load scripts -->
