@@ -1,0 +1,14 @@
+site_name: How the AI Birds Learn to Fly
+theme:
+  name: material
+  palette:
+    primary: teal
+nav:
+  - Home: index.md
+  - What’s Happening in the Game?: game-overview.md
+  - Genetic Algorithms - Nature’s Trick: genetic-algorithms.md
+  - Neural Networks - The Bird Brains: neural-networks.md
+  - How They Work Together: teamwork.md
+  - Fun Facts: fun-facts.md
+  - Glossary: glossary.md
+  - Play and Explore!: explore.md
