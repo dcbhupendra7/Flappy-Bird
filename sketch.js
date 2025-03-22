@@ -5,6 +5,8 @@ let birdFrames = [];
 // Start in Human mode by default
 let isAiMode = false;
 
+let birdsAlive = 0;
+
 // AI Mode variables
 let populationSize = 50;
 let mutationRate = 0.1;
@@ -112,9 +114,11 @@ function draw() {
 
     // AI Mode logic
     let allDead = true;
+    birdsAlive = 0;
     for (let b of birds) {
       if (!b.dead) {
         allDead = false;
+        birdsAlive++;
         b.think(pipes); // Neural network decision
         b.update();
         b.show();
@@ -141,6 +145,10 @@ function draw() {
     // Check if generation is over
     if (allDead) {
       evolvePopulation();
+    }
+    // Debug: Log to console to confirm values
+    if (DEBUG) {
+      console.log(`Generation: ${generation}, Birds Alive: ${birdsAlive}`);
     }
   } else {
     // Human Mode logic (unchanged)
@@ -180,11 +188,19 @@ function draw() {
   image(baseImg, baseX, height - baseImgHeight, width, baseImgHeight);
   image(baseImg, baseX + width, height - baseImgHeight, width, baseImgHeight);
 
-  // Score display (both modes)
-  fill(255);
-  textSize(24);
+  fill(0); // Black fill for contrast
+  stroke(255); // White outline
+  strokeWeight(2); // Thicker outline
+  textSize(24); // Larger for score
   textAlign(CENTER, TOP);
-  text(score, width / 2, 10);
+  text(score, width / 2, 10); // Score at top center
+
+  if (isAiMode && aiStarted) {
+    textSize(16); // Smaller for additional stats
+    text(`Generation: ${generation}`, width / 2, 40); // Below score
+    text(`Birds Alive: ${birdsAlive}`, width / 2, 60); // Below generation
+  }
+  noStroke(); // Reset stroke
 
   // Update scores
   if (score > bestScore) bestScore = score;
@@ -250,6 +266,8 @@ function startAiMode() {
   for (let i = 0; i < populationSize; i++) {
     birds.push(new AiBird());
   }
+  birdsAlive = populationSize;
+  generation = 1;
 }
 
 function evolvePopulation() {
